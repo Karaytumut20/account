@@ -1,3 +1,4 @@
+"use client"; // <-- BU SATIRI EKLEMEN GEREKİYOR
 import React, { useState, useEffect } from 'react';
 // 1. Adım'da oluşturduğun istemciyi import et
 import { supabase } from '../lib/supabaseClient'; 
