@@ -1,48 +1,54 @@
-import { supabase } from "@/lib/supabaseClient";
-import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
-import { deletePost } from "@/app/actions";
+'use client';
 
-async function getPosts() {
-  const { data, error } = await supabase
-    .from("posts")
-    .select("id, title, created_at")
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return data;
-}
+import { useState } from 'react';
 
-export default async function AdminDashboard() {
-  const posts = await getPosts();
+export default function Admin() {
+  const [form, setForm] = useState({
+    title: '', desc: '', tech: '', link: '', image: ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, tech: form.tech.split(',') })
+    });
+    if (res.ok) alert('Proje eklendi!');
+  };
 
   return (
-    <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold mb-8">Gönderi Yönetimi</h1>
-      <div className="bg-white dark:bg-dark p-6 rounded-lg shadow-lg border dark:border-gray-300/20">
-        <ul className="space-y-4">
-          {posts.map((post) => (
-            <li key={post.id} className="flex justify-between items-center border-b dark:border-gray-300/20 pb-4 last:border-b-0">
-              <div>
-                <span className="text-lg font-medium">{post.title}</span>
-                <p className="text-sm text-gray-200">
-                  {new Date(post.created_at).toLocaleDateString('tr-TR')}
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <Link href={`/admin/edit/${post.id}`} className="text-blue-500 hover:text-blue-400">
-                  <Pencil size={18} />
-                </Link>
-                <form action={deletePost}>
-                  <input type="hidden" name="id" value={post.id} />
-                  <button type="submit" className="text-red-500 hover:text-red-400">
-                    <Trash2 size={18} />
-                  </button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="min-h-screen py-20 px-8 max-w-2xl mx-auto">
+      <h2 className="text-4xl font-bold mb-10">Admin Paneli</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <input
+          placeholder="Proje Adı"
+          value={form.title}
+          onChange={e => setForm({ ...form, title: e.target.value })}
+          className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg"
+        />
+        <textarea
+          placeholder="Açıklama"
+          value={form.desc}
+          onChange={e => setForm({ ...form, desc: e.target.value })}
+          className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg h-24"
+        />
+        <input
+          placeholder="Teknolojiler (virgülle ayrılmış)"
+          value={form.tech}
+          onChange={e => setForm({ ...form, tech: e.target.value })}
+          className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg"
+        />
+        <input
+          placeholder="Link"
+          value={form.link}
+          onChange={e => setForm({ ...form, link: e.target.value })}
+          className="w-full p-4 bg-gray-900 border border-gray-700 rounded-lg"
+        />
+        <button type="submit" className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-bold">
+          Proje Ekle
+        </button>
+      </form>
     </div>
   );
 }

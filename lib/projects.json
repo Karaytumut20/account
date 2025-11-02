@@ -1,0 +1,17 @@
+// lib/projects.ts
+export const projects = [
+  {
+    title: "Lüks E-Ticaret",
+    desc: "Rolex tarzı 3D ürün gösterimi",
+    tech: ["Next.js", "Three.js", "GSAP"],
+    link: "#",
+    image: "https://via.placeholder.com/600x400/ffd700/1a1a1a?text=LUX"
+  },
+  {
+    title: "AI Asistan Paneli",
+    desc: "Sesli komut, gerçek zamanlı yanıt",
+    tech: ["React", "Web Speech API", "OpenAI"],
+    link: "#",
+    image: "https://via.placeholder.com/600x400/b8860b/000000?text=AI"
+  }
+];

@@ -1,127 +1,209 @@
-"use client"; // Scroll animasyonu için "use client" ZORUNLUDUR
+// app/page.tsx
+'use client';
 
-import { supabase } from "@/lib/supabaseClient";
-import { useEffect, useState, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { PresentationControls, Stage, TorusKnot } from "@react-three/drei";
-import { useScroll, useMotionValueEvent, motion } from "framer-motion";
-import Link from "next/link";
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, Sparkles, Trail, MeshDistortMaterial, Stars, Text3D, Center } from '@react-three/drei';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Suspense, useRef, useState, useEffect } from 'react';
+import { Howl } from 'howler';
+import { LuxuryProjectCard } from '@/components/LuxuryProjectCard';
+import { projects } from '@/lib/projects';
 
-// Post tipini tanımla
-type Post = {
-  id: number;
-  title: string;
-};
+function LuxuryRolex() {
+  const meshRef = useRef<any>(null);
+  const [hovered, setHovered] = useState(false);
 
-// 3D Model Component'i
-function Model({ scrollYProgress }: { scrollYProgress: any }) {
-  const ref = useRef<THREE.Group>(null!);
-
-  // Scroll ilerlemesine göre modeli döndür
-  useFrame(() => {
-    if (ref.current) {
-      ref.current.rotation.y = scrollYProgress.get() * 8; // Kaydırdıkça 8 tam tur dönsün
-      ref.current.rotation.x = scrollYProgress.get() * 4;
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y = state.clock.elapsedTime * 0.5;
+      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.1;
     }
   });
 
   return (
-    <group ref={ref}>
-      <TorusKnot args={[1, 0.3, 256, 32]} scale={1.2}>
-        <meshStandardMaterial color="#f5f5f7" roughness={0.1} metalness={0.9} />
-      </TorusKnot>
-    </group>
+    <Float speed={2} rotationIntensity={1.5} floatIntensity={2}>
+      <Trail width={10} length={12} color="#ffd700" attenuation={(t) => t * t}>
+        <group
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+        >
+          <mesh ref={meshRef} scale={[2.5, 2.5, 0.6]}>
+            <cylinderGeometry args={[1, 1, 1, 64]} />
+            <MeshDistortMaterial
+              color="#1a1a1a"
+              metalness={1}
+              roughness={0.05}
+              emissive="#ffd700"
+              emissiveIntensity={hovered ? 2 : 1}
+              distort={hovered ? 0.3 : 0.1}
+              speed={3}
+            />
+          </mesh>
+
+          <mesh position={[0, 0, 0.31]}>
+            <circleGeometry args={[0.9, 64]} />
+            <meshStandardMaterial color="#000" emissive="#ffd700" emissiveIntensity={1.5} />
+          </mesh>
+
+          <Center position={[0, 0.6, 0.32]}>
+            <Text3D
+              font="/fonts/helvetiker_bold.typeface.json"
+              size={0.25}
+              height={0.05}
+            >
+              XII
+              <meshStandardMaterial color="#ffd700" emissive="#ffd700" emissiveIntensity={2} />
+            </Text3D>
+          </Center>
+
+          <Sparkles count={200} scale={6} size={4} speed={1.2} opacity={0.9} color="#ffd700" />
+        </group>
+      </Trail>
+
+      <Stars radius={120} depth={60} count={7000} factor={5} saturation={1} fade speed={2} />
+    </Float>
   );
 }
 
-// Ana sayfa
-export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [currentTitle, setCurrentTitle] = useState("");
-  
-  // Bu component "use client" olduğu için, veriyi useEffect ile çekmeliyiz.
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const { data } = await supabase
-        .from("posts")
-        .select("id, title")
-        .order("created_at", { ascending: false })
-        .limit(5); // Sadece en son 5 postu göster
-      setPosts(data || []);
-      if (data && data.length > 0) {
-        setCurrentTitle(data[0].title);
-      }
-    };
-    fetchPosts();
-  }, []);
+function Luxury3DScene() {
+  return (
+    <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[10, 10, 5]} intensity={3} color="#ffd700" />
+      <directionalLight position={[-10, -10, -5]} intensity={1.2} color="#b8860b" />
+      <Suspense fallback={null}>
+        <LuxuryRolex />
+      </Suspense>
+    </Canvas>
+  );
+}
 
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"], // Tüm container boyunca
-  });
+function AIAssistant() {
+  const [listening, setListening] = useState(false);
 
-  // Kaydırma pozisyonuna göre hangi başlığın "aktif" olduğunu bul
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    const index = Math.floor(latest * posts.length);
-    if (posts[index] && currentTitle !== posts[index].title) {
-      setCurrentTitle(posts[index].title);
-    }
-  });
+  const speak = () => {
+    setListening(true);
+    const sound = new Howl({ src: ['https://www.soundjay.com/buttons/button-09.mp3'], volume: 0.5 });
+    sound.play();
+    const utterance = new SpeechSynthesisUtterance("Lüks bir deneyim sunuyorum, efendim.");
+    utterance.lang = 'tr-TR';
+    speechSynthesis.speak(utterance);
+    setTimeout(() => setListening(false), 3000);
+  };
 
   return (
-    <main className="relative w-full" ref={containerRef}>
-      {/* 1. 3D Model Alanı (Sabit Kalacak) */}
-      <div className="h-screen w-full sticky top-0 flex flex-col items-center justify-center">
-        {/* Başlık alanı */}
-        <div className="absolute top-24 text-center z-10 p-4">
-          <motion.h1 
-            key={currentTitle} // key değiştiğinde animasyon tetiklenir
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold max-w-2xl"
-          >
-            {currentTitle || "Yükleniyor..."}
-          </motion.h1>
-        </div>
-        
-        {/* 3D Canvas */}
-        <Canvas dpr={[1, 2]} camera={{ fov: 45 }} className="w-full h-full">
-          <color attach="background" args={['#0a0a0a']} />
-          <PresentationControls
-            global
-            config={{ mass: 2, tension: 500 }}
-            snap={{ mass: 4, tension: 1500 }}
-            rotation={[0, 0.3, 0]}
-            polar={[-Math.PI / 3, Math.PI / 3]}
-            azimuth={[-Math.PI / 1.4, Math.PI / 2]}
-          >
-            <Stage environment="city" intensity={0.5}>
-              <Model scrollYProgress={scrollYProgress} />
-            </Stage>
-          </PresentationControls>
-        </Canvas>
-      </div>
-      
-      {/* 2. Post Listesi (Kaydırılabilir Alan) */}
-      {/* Bu alan 3D modelin "altında" kayar ve scrollYProgress'i tetikler */}
-      <div className="relative z-10 bg-dark text-light">
-        {posts.map((post) => (
-          <div key={post.id} className="h-screen flex items-center justify-center">
-            <Link 
-              href={`/post/${post.id}`} 
-              className="text-3xl font-medium text-gray-200 hover:text-white transition-colors"
-            >
-              Devamını Oku
-            </Link>
-          </div>
-        ))}
-      </div>
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      onClick={speak}
+      className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full shadow-2xl flex items-center justify-center z-50"
+    >
+      <motion.div
+        animate={{ rotate: listening ? 360 : 0 }}
+        transition={{ duration: 1, repeat: listening ? Infinity : 0 }}
+        className="w-8 h-8 bg-black rounded-full"
+      />
+    </motion.button>
+  );
+}
 
-      {/* Admin paneline gitmek için gizli bir link :) */}
-      <Link href="/admin" className="absolute bottom-10 right-10 z-20 text-xs text-gray-200/50 hover:text-white">
-        Admin
-      </Link>
-    </main>
+function ScrollStory() {
+  const { scrollYProgress } = useScroll();
+  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
+
+  return (
+    <motion.div
+      style={{ opacity, scale }}
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20"
+    >
+      <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-yellow-400 via-yellow-600 to-amber-600 bg-clip-text text-transparent">
+        LUXURY DEVELOPER
+      </h1>
+      <p className="text-2xl text-yellow-300 mt-4">Scroll to explore excellence</p>
+    </motion.div>
+  );
+}
+
+export default function Home() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return <div className="bg-black min-h-screen" />;
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black -z-10" />
+      <AIAssistant />
+      
+      <main className="min-h-screen text-white overflow-x-hidden">
+        <section className="relative h-screen flex items-center justify-center">
+          <div className="absolute inset-0">
+            <Luxury3DScene />
+          </div>
+          <ScrollStory />
+        </section>
+
+        <section className="py-32 px-8 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-6xl font-bold bg-gradient-to-r from-yellow-400 to-amber-600 bg-clip-text text-transparent"
+          >
+            Umut Karaytuğ
+          </motion.h2>
+          <p className="text-2xl text-yellow-300 mt-6 max-w-4xl mx-auto">
+            Lüks web deneyimleri tasarlayan, AI ve 3D teknolojilerini birleştiren bir Full-Stack Developer.
+          </p>
+        </section>
+
+        <section className="py-32 px-8">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-6xl font-bold text-center mb-20 bg-gradient-to-r from-yellow-400 to-amber-600 bg-clip-text text-transparent"
+          >
+            Lüks Projelerim
+          </motion.h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-7xl mx-auto">
+            {projects.map((proj, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 100 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.2 }}
+              >
+                <LuxuryProjectCard {...proj} />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        <section className="py-32 px-8 text-center bg-gradient-to-t from-yellow-900/20 to-transparent">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-5xl font-bold mb-8 bg-gradient-to-r from-yellow-400 to-amber-600 bg-clip-text text-transparent"
+          >
+            Birlikte Lüks Bir Şeyler Yaratabiliriz
+          </motion.h2>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            className="px-12 py-6 bg-gradient-to-r from-yellow-600 to-amber-600 rounded-full text-black font-bold text-xl shadow-2xl"
+          >
+            İletişime Geç
+          </motion.button>
+        </section>
+
+        <footer className="py-16 text-center border-t border-yellow-600/30">
+          <p className="text-yellow-400 text-lg">
+            © 2025 Umut Karaytuğ • Lüks Web Deneyimleri
+          </p>
+        </footer>
+      </main>
+    </>
   );
 }

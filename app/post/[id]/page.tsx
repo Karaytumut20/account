@@ -18,6 +18,8 @@ export default async function PostPage({ params }: { params: { id: string } }) {
   const post = await getPost(params.id);
 
   return (
+    // <main> etiketine layout'tan kaldırdığımız kısıtlamaları ekledik.
+    // Artık 3D ana sayfa tam ekran olurken, bu sayfa okunaklı kalacak.
     <main className="max-w-4xl mx-auto px-4 py-16 animate-fade-in">
       <Link href="/" className="flex items-center gap-2 text-gray-200 hover:text-white mb-8">
         <ArrowLeft size={16} />
