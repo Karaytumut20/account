@@ -81,8 +81,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: i * 0.15 }}
                 viewport={{ once: true }}
               >
-                <ProjectCard title={proj.title} desc={proj.desc} tech={proj.tech} link={proj.link} image={proj.image} index={i} /> 
-              </motion.div>
+<ProjectCard title={proj.title} desc={proj.desc} tech={proj.tech} link={proj.link} image={proj.image} />              </motion.div>
             ))}
           </div>
         </section>

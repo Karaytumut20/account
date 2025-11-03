@@ -1,8 +1,7 @@
+// next.config.ts
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    transpilePackages: ['postprocessing'],
-  },
+  transpilePackages: ['postprocessing'],
 };
 
 module.exports = nextConfig;

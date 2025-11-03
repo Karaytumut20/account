@@ -12,8 +12,7 @@ export default function Portfolio() {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {projects.map((proj, i) => (
-          <ProjectCard key={i} {...proj} index={i} />
-        ))}
+<ProjectCard key={i} {...proj} />        ))}
       </div>
     </section>
   );
