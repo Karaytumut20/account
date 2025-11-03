@@ -1,3 +1,5 @@
+// app/layout.tsx
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -13,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gelişmiş Portfolyo Projesi", // Başlığı portfolyoya çevirelim
-  description: "Next.js 16 + Supabase ile güçlendirildi",
+  title: "Umut Karaytuğ | Full-Stack Developer", // Başlığı güncelledim
+  description: "Yaratıcı 3D ve AI çözümleri üreten geliştirici portfolyosu.",
 };
 
 export default function RootLayout({
@@ -24,14 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
+      {/* body'ye yeni arka plan rengimizi uygulayalım */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-light dark:bg-black text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {/* Navigasyonu kaldırdık çünkü ana sayfanız (app/page.tsx) 
-          ve admin paneliniz (app/admin/layout.tsx) kendi navigasyon mantıklarına sahip.
-          <main> etiketindeki tüm kısıtlayıcı class'ları (max-w-4xl, p-4, mt-8) kaldırdık.
-          Bu, app/page.tsx'in tam ekran 3D sahnesini göstermesine izin verecek.
-        */}
+        {/* Main tag'i tam ekran deneyimi için kısıtlamasız kalmalı */}
         <main>
           {children}
         </main>
